@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+
+# Builds and caches
+dist/
+build/
+coverage/
+.cache/
+
+# Environment and secrets
+.env
+.env.*
+
+# Logs
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS/editor cruft
+.DS_Store
+.vscode/
+.idea/
