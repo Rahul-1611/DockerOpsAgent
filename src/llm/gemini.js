@@ -1,6 +1,7 @@
 // Gemini LLM client wrapper for generating plans, summaries, and tool calls.
 
 import { GoogleGenAI } from "@google/genai";
+import { tools } from "../mcp/dockerClient";
 import dotenv from 'dotenv';
 dotenv.config();
 
