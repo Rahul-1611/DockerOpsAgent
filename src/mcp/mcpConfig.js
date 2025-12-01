@@ -1,3 +1,4 @@
+// Docker Hub MCP Configuration
 import { fileURLToPath } from 'url';
 import { dirname, resolve } from 'path';
 import dotenv from 'dotenv';
@@ -13,7 +14,7 @@ dotenv.config({ path: resolve(__dirname, '../../.env') });
  * Using the Docker Hub MCP Server image from Docker Hub
  */
 export const mcpServers = {
-    "docker-hub-mcp": {
+    "dockerHubMcp": {
         command: "docker",
         args: [
             "run",
