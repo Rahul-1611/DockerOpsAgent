@@ -27,4 +27,22 @@ export async function runGemini(prompt, tools = []) {
     return response;
 }
 
+export function extractText(response) {
+    const parts = response?.candidates?.[0]?.content?.parts ?? [];
+    return parts.map(p => p.text || "").join("\n").trim();
+}
+
+
+export async function geminiText(prompt) {
+    const response = await runGemini([
+        { role: "user", parts: [{ text: prompt }] }
+    ]);
+
+    return extractText(response);
+}
+
+export async function geminiWithTools(messages, tools) {
+    return await runGemini(messages, tools);
+}
+
 

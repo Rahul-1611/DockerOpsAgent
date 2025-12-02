@@ -1,6 +1,6 @@
 // MCP Docker client wrapper for issuing container operations from the agent.
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+// import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+// import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import { MultiServerMCPClient } from "@modelcontextprotocol/sdk/client/multiserver.js";
 import { mcpServers } from "./mcpConfig";
 
@@ -44,4 +44,16 @@ const client = new MultiServerMCPClient({
 //     }
 // }
 
-export const tools = await client.getTools();  
+// Cache tools at module load (ok for now)
+export const dockerTools = await client.getTools();
+
+/**
+ * Optional helper: call a specific MCP tool directly (no Gemini).
+ */
+export async function callDockerTool(toolName, args) {
+    return client.callTool({
+        serverName: "dockerHubMcp",
+        toolName,
+        arguments: args,
+    });
+}
