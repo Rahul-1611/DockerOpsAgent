@@ -35,13 +35,20 @@ export const AgentState = z.object({
  * You can use this in your CLI when you invoke the graph.
  */
 export function initialAgentState(firstMessage) {
+    let messages = [];
+    if (firstMessage) {
+        messages = typeof firstMessage === "string"
+            ? [{ role: "user", content: firstMessage }]
+            : [firstMessage];
+    }
+
     return {
-        messages: firstMessage ? [firstMessage] : [],
+        messages,
         plan: undefined,
         currentStep: undefined,
         summary: undefined,
         needsHumanApproval: false,
         lastToolResult: undefined,
         error: undefined,
-    }
+    };
 }
