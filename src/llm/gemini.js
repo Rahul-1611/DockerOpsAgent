@@ -23,7 +23,7 @@ const API_KEY = process.env.GOOGLE_API_KEY ?? process.env.GEMINI_API_KEY;
 export const baseGemini = new ChatGoogleGenerativeAI({
     model: MODEL_NAME,
     apiKey: API_KEY,
-    temperature: 0.3,
+    temperature: 0,
     maxRetries: 2,
 });
 
