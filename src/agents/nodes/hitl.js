@@ -1,5 +1,5 @@
 // Node that routes to human-in-the-loop checks before executing risky steps.
-
+import { SystemMessage } from "@langchain/core/messages";
 /**
  * HITL Node
  *
@@ -9,38 +9,50 @@
  *
  * Risky keywords: stop, remove, rm, delete, prune, kill
  */
+
+const riskyToolKeywords = [
+    "create-repository",
+    "update-repository-info",
+    "create repository",
+    "update repository",
+    "create",
+    "update",
+];
+
 export async function hitlNode(state) {
     const plan = state.plan ?? [];
     const currentStepIndex = state.currentStep ?? 0;
-
-    // If we've finished the plan, nothing to check
-    if (currentStepIndex >= plan.length) {
-        return {};
-    }
-
-    const currentStepText = plan[currentStepIndex];
-    const lowerStep = currentStepText.toLowerCase();
-
-    const riskyKeywords = ["stop", "remove", "rm", "delete", "prune", "kill"];
-    const isRisky = riskyKeywords.some((kw) => lowerStep.includes(kw));
-
     const messages = state.messages ?? [];
 
-    if (isRisky) {
-        // In a real system, we'd suspend execution here.
-        // For this prototype, we'll just log a warning message to the conversation
-        // and let the executor proceed (or we could halt).
-        // Let's add a system message noting the risk.
-        const warningMsg = {
-            role: "assistant",
-            type: "system",
-            content: `[HITL] Risky operation detected: "${currentStepText}". Proceeding with caution (or waiting for approval in a real app).`
-        };
+    if (
+        !Array.isArray(plan) ||
+        plan.length === 0 ||
+        currentStepIndex >= plan.length
+    ) {
         return {
-            messages: [...messages, warningMsg]
+            needsHumanApproval: false,
         };
     }
 
-    // Not risky
-    return {};
+    const currentStepDescription = String(plan[currentStepIndex] ?? "").toLowerCase();
+
+    const isRisky = riskyToolKeywords.some((kw) =>
+        currentStepDescription.includes(kw)
+    );
+
+    if (!isRisky) {
+        return {
+            needsHumanApproval: false,
+        };
+    }
+
+    const warning = new SystemMessage({
+        content: `[HITL] Risky Docker Hub operation detected in step ${currentStepIndex + 1
+            }: "${plan[currentStepIndex]}". Human approval is required before executing this step (create/update).`,
+    });
+
+    return {
+        needsHumanApproval: true,
+        messages: [...messages, warning],
+    };
 }
