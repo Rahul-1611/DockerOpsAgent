@@ -2,6 +2,8 @@
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { AIMessage } from "@langchain/core/messages";
 import { baseGemini } from "../../llm/gemini.js";
+import { logger } from "../../utils/logger.js";
+import { LLMError } from "../../utils/errors.js";
 
 const summarizerPrompt = ChatPromptTemplate.fromMessages([
     [
@@ -41,48 +43,58 @@ function coerceContentToString(msg) {
 }
 
 export async function summarizer(state) {
-    const messages = state.messages ?? [];
-    const plan = state.plan ?? [];
-    const currentStep = state.currentStep ?? 0;
-    const lastToolResult = state.lastToolResult;
+    try {
+        const messages = state.messages ?? [];
+        const plan = state.plan ?? [];
+        const currentStep = state.currentStep ?? 0;
+        const lastToolResult = state.lastToolResult;
 
-    const historyText = messages.map(coerceContentToString).filter(Boolean).join("\n");
+        const historyText = messages.map(coerceContentToString).filter(Boolean).join("\n");
 
-    const planText =
-        Array.isArray(plan) && plan.length > 0
-            ? plan.map((step, idx) => `${idx + 1}. ${step}`).join("\n")
-            : "No multi-step plan was generated.";
+        const planText =
+            Array.isArray(plan) && plan.length > 0
+                ? plan.map((step, idx) => `${idx + 1}. ${step}`).join("\n")
+                : "No multi-step plan was generated.";
 
-    const toolResultText =
-        lastToolResult !== undefined
-            ? typeof lastToolResult === "string"
-                ? lastToolResult
-                : JSON.stringify(lastToolResult, null, 2)
-            : "No tool result captured.";
+        const toolResultText =
+            lastToolResult !== undefined
+                ? typeof lastToolResult === "string"
+                    ? lastToolResult
+                    : JSON.stringify(lastToolResult, null, 2)
+                : "No tool result captured.";
 
-    const chain = summarizerPrompt.pipe(baseGemini);
-    const aiMessage = await chain.invoke({
-        plan: planText,
-        currentStep,
-        toolResult: toolResultText,
-        history: historyText,
-    });
+        const chain = summarizerPrompt.pipe(baseGemini);
+        const aiMessage = await chain.invoke({
+            plan: planText,
+            currentStep,
+            toolResult: toolResultText,
+            history: historyText,
+        });
+        logger.info("Summarizer: generated summary");
 
-    const summaryText = Array.isArray(aiMessage.content)
-        ? aiMessage.content
-              .map((part) => (typeof part === "string" ? part : part.text ?? ""))
-              .join("")
-              .trim()
-        : String(aiMessage.content ?? "").trim();
+        const summaryText = Array.isArray(aiMessage.content)
+            ? aiMessage.content
+                  .map((part) => (typeof part === "string" ? part : part.text ?? ""))
+                  .join("")
+                  .trim()
+            : String(aiMessage.content ?? "").trim();
 
-    const summaryMessage = new AIMessage({
-        content: summaryText,
-        name: "summarizer",
-    });
+        const summaryMessage = new AIMessage({
+            content: summaryText,
+            name: "summarizer",
+        });
 
-    return {
-        ...state,
-        summary: summaryText,
-        messages: [...messages, summaryMessage],
-    };
+        return {
+            ...state,
+            summary: summaryText,
+            messages: [...messages, summaryMessage],
+        };
+    } catch (err) {
+        const error = new LLMError("Summarizer failed", err);
+        logger.error(error.message, { error });
+        return {
+            ...state,
+            error: error.message,
+        };
+    }
 }

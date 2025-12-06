@@ -1,5 +1,7 @@
 // Node that routes to human-in-the-loop checks before executing risky steps.
 import { SystemMessage } from "@langchain/core/messages";
+import { logger } from "../../utils/logger.js";
+
 /**
  * HITL Node
  *
@@ -9,7 +11,6 @@ import { SystemMessage } from "@langchain/core/messages";
  *
  * Risky keywords: stop, remove, rm, delete, prune, kill
  */
-
 const riskyToolKeywords = [
     "create-repository",
     "update-repository-info",
@@ -41,6 +42,10 @@ export async function hitlNode(state) {
     );
 
     if (!isRisky) {
+        logger.debug("HITL: no risky operation detected", {
+            currentStepIndex,
+            currentStepDescription,
+        });
         return {
             needsHumanApproval: false,
         };
@@ -49,6 +54,11 @@ export async function hitlNode(state) {
     const warning = new SystemMessage({
         content: `[HITL] Risky Docker Hub operation detected in step ${currentStepIndex + 1
             }: "${plan[currentStepIndex]}". Human approval is required before executing this step (create/update).`,
+    });
+
+    logger.warn("HITL: risky operation detected", {
+        currentStepIndex,
+        step: plan[currentStepIndex],
     });
 
     return {
