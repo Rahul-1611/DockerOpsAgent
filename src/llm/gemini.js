@@ -13,8 +13,12 @@ dotenv.config();
 
 // --- Base model setup -------------------------------------------------------
 
-const MODEL_NAME = process.env.GEMINI_MODEL ?? "gemini-2.5-pro";
-const API_KEY = process.env.GOOGLE_API_KEY ?? process.env.GEMINI_API_KEY;
+const MODEL_NAME = process.env.GEMINI_MODEL ?? "gemini-2.5-flash";
+const API_KEY = process.env.GEMINI_API_KEY;
+
+if (!API_KEY) {
+    throw new Error("Missing GEMINI_API_KEY");
+}
 
 /**
  * Base Gemini chat model (no tools bound).

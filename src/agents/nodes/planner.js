@@ -1,4 +1,4 @@
-import { getPlanFromGemini } from "../../llm/gemini";
+import { getPlanFromGemini } from "../../llm/gemini.js";
 import { logger } from "../../utils/logger.js";
 import { LLMError } from "../../utils/errors.js";
 
@@ -7,9 +7,10 @@ async function planner(state) {
         const messages = state.messages ?? [];
         const lastMessage = messages[messages.length - 1];
 
-        const userContent = typeof lastMessage === "string"
-            ? lastMessage
-            : (last?.content ?? "Help me with Docker Hub.");
+        const userContent =
+            typeof lastMessage === "string"
+                ? lastMessage
+                : (lastMessage?.content ?? "Help me with Docker Hub.");
 
         const promptMessages = [
             [
