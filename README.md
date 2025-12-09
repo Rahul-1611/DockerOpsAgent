@@ -1,16 +1,44 @@
-# DockerOpsAgent
+DockerOpsAgent 🚢
+=================
 
-DockerOpsAgent is an intelligent, conversational CLI agent designed to help you manage Docker Hub operations using natural language.
+Conversational, LangGraph-powered assistant for Docker Hub tasks. It plans, checks risky actions, executes MCP tools, and summarizes outcomes — all from a simple CLI.
 
-Built with **LangGraph** and powered by **Gemini 2.5 Flash**, it connects to Docker Hub via the **Model Context Protocol (MCP)** to perform tasks like listing repositories, checking image tags, and more.
+Why it’s neat ✨
+---------------
+- Plans multi-step Docker Hub workflows and executes the right tools.
+- Human-in-the-loop guardrails for create/update operations.
+- Lightweight CLI with checkpointed threads so you can pause/resume.
+- Structured logging for debugging (set `LOG_LEVEL`).
 
-## Features
+Architecture (text diagram) 🧭
+-----------------------------
+```
+User CLI
+  |
+  v
+Planner (Gemini structured plan)
+  |
+  v
+HITL Node (risk check + interrupt/resume for create/update)
+  |
+  v
+Executor (Gemini tool-calling -> Docker Hub MCP tools)
+  |
+  v
+Summarizer (Gemini concise wrap-up)
+```
 
--   **Natural Language Interface**: Ask for what you need (e.g., "List all my repositories").
--   **Agentic Workflow**: Uses a Planner-Executor-Summarizer architecture to break down complex requests.
--   **Human-in-the-Loop (HITL)**: Automatically pauses for approval before executing risky operations (like deleting repositories).
--   **Structured Logging**: JSON-based logging for easy observability.
--   **Extensible**: Built on the standard MCP ecosystem.
+Architecture (visual)
+---------------------
+![DockerOpsAgent flow](DockerOpsFlow.png)
+
+Workflow highlights
+-------------------
+- Planner: breaks requests into Docker Hub steps via structured output.
+- HITL: detects risky verbs (create/update/etc.), raises LangGraph interrupt for approval.
+- Executor: binds MCP Docker Hub tools and runs the current step.
+- Summarizer: short final response after all steps (or post-rejection).
+- Checkpointing: `thread_id` keeps state across approvals/resumes.
 
 ## Setup
 
