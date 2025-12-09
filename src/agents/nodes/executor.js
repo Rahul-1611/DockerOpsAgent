@@ -96,6 +96,11 @@ You MUST respond by choosing tools (tool calls) and arguments, not by doing anyt
         const toolResult = await tool.invoke(args ?? {});
         logger.info("Executor: tool result", { toolName, result: toolResult });
 
+        const safeResult =
+            typeof toolResult === "string"
+                ? toolResult
+                : JSON.stringify(toolResult, null, 2);
+
         const toolMessage = new ToolMessage({
             tool_call_id: toolCallId,
             name: toolName,
@@ -106,10 +111,12 @@ You MUST respond by choosing tools (tool calls) and arguments, not by doing anyt
         const nextStep = hasPlan ? currentStep + 1 : currentStep;
 
         return {
-
             ...state,
             messages: [...messages, planningMessage, aiMessage, toolMessage],
-            lastToolResult: toolResult,
+            lastToolResult: {
+                toolName,
+                raw: safeResult,
+            },
             currentStep: nextStep,
             error: undefined,
         };

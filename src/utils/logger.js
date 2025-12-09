@@ -7,7 +7,7 @@ const LOG_LEVELS = {
     ERROR: 3,
 };
 
-const CURRENT_LEVEL = LOG_LEVELS[process.env.LOG_LEVEL?.toUpperCase()] ?? LOG_LEVELS.INFO;
+const CURRENT_LEVEL = LOG_LEVELS[process.env.LOG_LEVEL?.toUpperCase()] ?? LOG_LEVELS.ERROR;
 
 function formatMessage(level, message, context = {}) {
     const timestamp = new Date().toISOString();

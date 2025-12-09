@@ -20,6 +20,14 @@ function routeAfterHitl(state) {
     return "executor";
 }
 
+// Decide what to do after executor based on remaining plan steps.
+function routeAfterExecutor(state) {
+    const plan = state.plan ?? [];
+    const currentStep = state.currentStep ?? 0;
+    const hasMoreSteps = Array.isArray(plan) && plan.length > 0 && currentStep < plan.length;
+    return hasMoreSteps ? "hitl" : "summarizer";
+}
+
 const builder = new StateGraph(AgentState)
     // Nodes
     .addNode("planner", planner)
@@ -32,7 +40,7 @@ const builder = new StateGraph(AgentState)
     .addEdge(START, "planner")
     .addEdge("planner", "hitl")
     .addConditionalEdges("hitl", routeAfterHitl, ["executor", "summarizer"])
-    .addEdge("executor", "summarizer")
+    .addConditionalEdges("executor", routeAfterExecutor, ["hitl", "summarizer"])
     .addEdge("summarizer", END);
 
 // In-memory checkpointer for short-term memory + HITL

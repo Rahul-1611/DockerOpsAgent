@@ -69,22 +69,39 @@ export async function runCLI() {
             return;
         }
 
+        // inside rl.on("line", async (line) => { ... } )
         try {
             const result = await runDockerOpsAgent(input, { threadId: THREAD_ID });
+
+            // 1) Print the natural-language reply (summarizer)
             printResult(result.reply);
 
-            let current = result;
-            // Loop in case multiple interrupts occur sequentially
-            // (rare for this flow, but keeps CLI robust).
-            while (true) {
-                const resumed = await handleInterrupts(current);
-                if (!resumed) break;
-                printResult(resumed.reply);
-                current = resumed;
-            }
+            // // 2) ALSO print the raw tool result if present
+            // const lastToolResult = result?.state?.lastToolResult;
+            // if (lastToolResult !== undefined) {
+            //     console.log("\n--- Raw tool result ---");
+            //     printResult(lastToolResult);
+            // }
+
+            // let current = result;
+            // while (true) {
+            //     const resumed = await handleInterrupts(current);
+            //     if (!resumed) break;
+
+            //     printResult(resumed.reply);
+
+            //     const resumedToolResult = resumed?.state?.lastToolResult;
+            //     if (resumedToolResult !== undefined) {
+            //         console.log("\n--- Raw tool result ---");
+            //         printResult(resumedToolResult);
+            //     }
+
+            //     current = resumed;
+            // }
         } catch (err) {
             printError(err);
         }
+
 
         rl.prompt();
     });
