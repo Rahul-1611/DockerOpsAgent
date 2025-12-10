@@ -1,5 +1,5 @@
 // Node that executes planned Docker actions and tool calls.
-// Node that executes planned Docker actions and tool calls.
+
 
 import { dockerTools } from "../../mcp/dockerClient.js";
 import { makeToolCallingModel } from "../../llm/gemini.js";
